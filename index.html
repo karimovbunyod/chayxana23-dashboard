@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chayxana23 — Админ панель</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    :root {
+      --gold: #fcd34d;
+      --dark-gold: #eab308;
+      --bg: #0f172a;
+      --card: #1e2937;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e2937);
+      color: #e2e8f0;
+      margin: 0;
+      padding: 15px 10px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.4rem;
+      color: var(--gold);
+      text-shadow: 0 0 15px rgba(252,211,77,0.5);
+      margin-bottom: 8px;
+    }
+
+    .subtitle { text-align: center; color: #94a3b8; margin-bottom: 25px; }
+
+    .controls {
+      max-width: 1600px;
+      margin: 0 auto 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    input, select, textarea, button {
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      background: #334155;
+      color: white;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .room {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 20px;
+      border: 1px solid rgba(234,179,8,0.25);
+    }
+
+    .vip { border: 2px solid #f59e0b; box-shadow: 0 0 30px rgba(245,158,11,0.5); }
+
+    .room h2 {
+      text-align: center;
+      color: var(--gold);
+      margin: 0 0 18px 0;
+      font-size: 1.7rem;
+    }
+
+    .booking {
+      background: #1e2937;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-left: 6px solid #eab308;
+    }
+
+    /* ==================== МОДАЛЬНОЕ ОКНО ==================== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      overflow-y: auto;                    /* ← важно */
+    }
+
+    .modal-content {
+      background: #1e2937;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 20px;
+      border: 2px solid var(--gold);
+      max-height: 92vh;                    /* не больше 92% высоты экрана */
+      overflow-y: auto;                    /* скролл внутри окна */
+      box-shadow: 0 0 40px rgba(252, 211, 77, 0.3);
+    }
+
+    /* Чтобы скролл был красивым */
+    .modal-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .modal-content::-webkit-scrollbar-thumb {
+      background: #eab308;
+      border-radius: 10px;
+    }
+    
+    /* Уменьшаем отступы на очень маленьких экранах */
+    @media (max-width: 480px) {
+      .modal {
+        padding: 10px;
+      }
+      .modal-content {
+        max-height: 95vh;
+        border-radius: 16px;
+      }
+      .modal-body {
+        padding: 18px 16px;
+      }
+      .modal-footer {
+        padding: 16px;
+      }
+    }
+
+    .modal-header {
+      padding: 20px;
+      text-align: center;
+      background: #0f172a;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 1.6rem;
+    }
+
+    .modal-body { padding: 20px; }
+
+    .form-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+    }
+
+    .modal-footer {
+      padding: 20px;
+      display: flex;
+      gap: 12px;
+      background: #0f172a;
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: 15px;
+      font-size: 1.08rem;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .save-btn { background: #22c55e; color: white; }
+    .cancel-btn { background: #475569; color: white; }
+
+    /* ==================== АДАПТАЦИЯ ДЛЯ ТЕЛЕФОНА ==================== */
+    @media (max-width: 768px) {
+      body { padding: 10px 8px; }
+      h1 { font-size: 2rem; }
+
+      .form-grid {
+        grid-template-columns: 1fr;        /* на телефоне всё в одну колонку */
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .room { padding: 16px; }
+      .booking { padding: 14px; }
+
+      .modal-content { max-width: 100%; }
+      .modal-body { padding: 18px; }
+    }
+
+    /* Для больших экранов (ноутбук, планшет) — 2 колонки */
+    @media (min-width: 769px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .form-group.full {
+        grid-column: 1 / -1;
+      }
+    }
+
+    /* Скрываем основной контент до логина */
+    #dashboard, .controls, h1, .subtitle {
+      display: none;
+    }
+
+    /* Показываем после успешного входа */
+    body.logged-in #dashboard,
+    body.logged-in .controls,
+    body.logged-in h1,
+    body.logged-in .subtitle {
+      display: block;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Окно авторизации -->
+  <div id="loginScreen" style="position: fixed; inset: 0; background: #0f172a; z-index: 3000; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white;">
+    <div style="max-width: 380px; width: 90%; text-align: center;">
+      <h1 style="margin-bottom: 10px;">Chayxana23</h1>
+      <p style="color: #94a3b8; margin-bottom: 30px;">Админ панель</p>
+
+      <div style="background: #1e2937; padding: 30px; border-radius: 20px; border: 1px solid #eab308;">
+        <input type="text" id="username" placeholder="Логин" 
+               style="width:100%; padding:14px; margin-bottom:12px; border-radius:12px; border:none; background:#334155; color:white; font-size:1.05rem;">
+
+        <input type="password" id="password" placeholder="Пароль" 
+               style="width:100%; padding:14px; margin-bottom:20px; border-radius:12px; border:none; background:#334155; color:white; font-size:1.05rem;">
+
+        <button onclick="checkLogin()" 
+                style="width:100%; padding:14px; background:#eab308; color:black; border:none; border-radius:12px; font-size:1.1rem; font-weight:bold;">
+          Войти
+        </button>
+
+        <p id="loginError" style="color:#ef4444; margin-top:15px; display:none;">Неверный логин или пароль</p>
+      </div>
+    </div>
+  </div>
+
+  <h1>Chayxana23</h1>
+  <p style="text-align:center;color:#94a3b8;">Админ панель резерваций</p>
+
+<div class="controls" style="flex-direction: column; align-items: center; gap: 15px;">
+  <div style="font-size: 1.3rem; color: #fcd34d; font-weight: 600;" id="dateTitle">
+    Брони на сегодня
+  </div>
+  
+  <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+    <input type="date" id="filterDate" 
+           style="padding: 12px 16px; font-size: 1.05rem; border-radius: 12px; background:#334155; color:white; border:none;">
+    
+    <button class="btn" onclick="loadBookings()" style="padding:12px 24px;">
+      🔄 Обновить
+    </button>
+    
+    <button class="btn" onclick="addGlobalBooking()" style="background:#22c55e; color:white;">
+      + Новая бронь
+    </button>
+  </div>
+</div>>
+
+  <div class="dashboard" id="dashboard"></div>
+
+  <!-- Модальное окно с календарем -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Добавить новую бронь</h2>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Имя клиента</label>
+            <input type="text" id="clientName" placeholder="Например: Алишер Рахмонов">
+          </div>
+
+          <div class="form-group">
+            <label>Номер телефона</label>
+            <input type="tel" id="clientPhone" maxlength="20" 
+                   placeholder="+998 (91) 659-77-88" 
+                   oninput="formatPhone(this)"
+                   onfocus="if(this.value.length < 5) this.value = '+998 ';">
+          </div>
+
+          <div class="form-group">
+            <label>Дата бронирования</label>
+            <input type="date" id="bookingDate">
+          </div>
+
+          <div class="form-group">
+            <label>Время прихода</label>
+            <select id="bookingTime"></select>
+          </div>
+
+          <div class="form-group">
+            <label>Комната</label>
+            <select id="roomSelect"></select>
+          </div>
+
+          <div class="form-group full">
+            <label>Статус</label>
+            <select id="status">
+              <option value="confirmed">✅ Подтверждено</option>
+              <option value="waiting">⏳ В ожидании</option>
+              <option value="arrived">👤 Пришёл</option>
+              <option value="cancelled">❌ Отменено</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>Заказ (сколько кг и что)</label>
+            <textarea id="orderText" rows="3" placeholder="Плов — 4 кг, Шашлык — 2 кг, Кальян..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="save-btn" onclick="saveBooking()">Сохранить</button>
+        <button class="cancel-btn" onclick="closeModal()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydHYeiW6Aln6Ilst3EGSBe2AX0BFFyeBTzVz5O3pyir0pqoPBZa4NziamSEYZwJdLs0A/exec';   // ← вставь свой текущий URL здесь
+
+    let bookings = [];
+    let editingId = null;
+
+    // Основная функция запроса к серверу
+    async function apiRequest(action, payload = {}) {
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, ...payload }),
+          redirect: 'follow'
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        if (!result.success && result.error) throw new Error(result.error);
+        return result;
+      } catch (err) {
+        alert('Ошибка: ' + err.message);
+        throw err;
+      }
+    }
+
+    // Загрузка всех броней
+    async function loadBookings() {
+      const selectedDate = document.getElementById('filterDate').value;
+
+      try {
+        const res = await fetch(WEB_APP_URL, { redirect: 'follow' });
+        let data = await res.json();
+        if (data.error) throw new Error(data.error);
+      
+        // Фильтрация по выбранной дате
+        if (selectedDate) {
+          data = data.filter(b => b.date === selectedDate);
+        }
+      
+        bookings = data;
+      
+        // Обновляем красивый заголовок
+        updateDateTitle(selectedDate);
+      
+        renderDashboard();
+      } catch (err) {
+        console.error("Ошибка загрузки:", err);
+      }
+    }
+
+    // Обновление заголовка с датой
+    function updateDateTitle(selectedDate) {
+      const titleEl = document.getElementById('dateTitle');
+      if (!selectedDate) {
+        titleEl.textContent = "Все брони";
+        return;
+      }
+    
+      const date = new Date(selectedDate);
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      const formatted = date.toLocaleDateString('ru-RU', options);
+
+      titleEl.textContent = `Брони на ${formatted}`;
+    }
+
+    function renderDashboard() {
+      const container = document.getElementById('dashboard');
+      container.innerHTML = '';
+    
+      const rooms = ["1-xona","2-xona","3-xona","4-xona","5-xona","6-xona","7-xona","8-xona","9-xona","VIP"];
+    
+      rooms.forEach(roomName => {
+        const roomBookings = bookings
+          .filter(b => b.room === roomName)
+          .sort((a, b) => {
+            const dateA = a.date || '';
+            const dateB = b.date || '';
+            if (dateA !== dateB) return dateA.localeCompare(dateB);
+            return (a.time || "").localeCompare(b.time || "");
+          });
+        
+        const roomDiv = document.createElement('div');
+        roomDiv.className = `room ${roomName === "VIP" ? "vip" : ""}`;
+        roomDiv.innerHTML = `<h2>${roomName}</h2><div id="bookings-${roomName}"></div>`;
+        container.appendChild(roomDiv);
+        
+        const div = document.getElementById(`bookings-${roomName}`);
+        
+        if (roomBookings.length === 0) {
+          div.innerHTML = `
+            <p style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:1.1rem;">
+              На этот день в комнате ${roomName} нет броней<br>
+              <span style="font-size:0.95rem;">🎉 Можно отдохнуть</span>
+            </p>`;
+          return;
+        }
+      
+        roomBookings.forEach(b => {
+          const displayDate = b.date 
+            ? new Date(b.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) 
+            : '';
+        
+          const displayTime = b.time || '—';
+        
+          // Надёжное форматирование номера телефона
+          let displayPhone = '—';
+          if (b.phone) {
+            let val = b.phone.toString().replace(/\D/g, '');
+            if (val.startsWith('998')) val = val.substring(3);
+            if (val.startsWith('8')) val = val.substring(1);
+            val = val.substring(0, 9);
+          
+            displayPhone = '+998';
+            if (val.length >= 2) displayPhone += ' (' + val.substring(0, 2) + ')';
+            if (val.length >= 5) displayPhone += ' ' + val.substring(2, 5);
+            if (val.length >= 7) displayPhone += '-' + val.substring(5, 7);
+            if (val.length >= 9) displayPhone += '-' + val.substring(7, 9);
+          }
+        
+          const statusClass = b.status || 'confirmed';
+          const statusIcon = { confirmed: '✅', waiting: '⏳', arrived: '👤', cancelled: '❌' }[statusClass] || '✅';
+        
+          const bookingDiv = document.createElement('div');
+          bookingDiv.className = `booking ${statusClass}`;
+        
+          bookingDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                <strong style="font-size: 1.22rem;">${b.name}</strong><br>
+                <span style="color: #f472b6; font-size: 1.05rem;">📞 ${displayPhone}</span>
+              </div>
+              <div style="text-align: right;">
+                ${displayDate ? `<span style="color:#94a3b8; font-size:0.95rem;">${displayDate}</span><br>` : ''}
+                <span style="color: #fcd34d; font-size: 1.5rem; font-weight: 700;">${displayTime}</span>
+              </div>
+            </div>
+          
+            ${b.order ? `<div style="margin: 10px 0 12px; color:#e2e8f0;">🍽️ ${b.order}</div>` : ''}
+          
+            <div style="margin-bottom: 14px;">
+              ${statusIcon} <strong>${getStatusText(statusClass)}</strong>
+            </div>
+          
+            <div style="display: flex; gap: 12px;">
+              <button onclick="editBooking(${b.id})" 
+                      style="flex:1; padding:12px; background:#eab308; color:black; border:none; border-radius:10px; font-weight:bold;">
+                Изменить
+              </button>
+              <button onclick="deleteBooking(${b.id})" 
+                      style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:10px; font-weight:bold;">
+                Удалить
+              </button>
+            </div>
+          `;
+          
+          div.appendChild(bookingDiv);
+        });
+      });
+    }
+
+    function getStatusText(status) {
+      const texts = {
+        confirmed: 'Подтверждено',
+        waiting: 'В ожидании',
+        arrived: 'Пришёл',
+        cancelled: 'Отменено'
+      };
+      return texts[status] || status;
+    }
+
+    // Добавление новой брони
+    window.addGlobalBooking = function() {
+      editingId = null;
+      document.getElementById('clientName').value = '';
+      document.getElementById('clientPhone').value = '';
+      document.getElementById('bookingTime').value = '19:30';
+      document.getElementById('orderText').value = '';
+      document.getElementById('status').value = 'confirmed';
+
+      const select = document.getElementById('roomSelect');
+      select.innerHTML = '';
+      ["1-xona","2-xona","3-xona","4-xona","5-xona","6-xona","7-xona","8-xona","9-xona","VIP"].forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('modalTitle').textContent = 'Добавить новую бронь';
+      document.getElementById('modal').style.display = 'flex';
+    };
+
+    window.saveBooking = async function() {
+      const name = document.getElementById('clientName').value.trim();
+      if (!name) return alert("Введите имя клиента");
+    
+      let phoneInput = document.getElementById('clientPhone').value.trim();
+
+      // Оставляем только цифры
+      let cleanPhone = phoneInput.replace(/\D/g, '');
+    
+      // Если начинается с 998 — убираем его (чтобы не дублировалось)
+      if (cleanPhone.startsWith('998')) {
+        cleanPhone = cleanPhone.substring(3);
+      }
+    
+      const payload = {
+        room: document.getElementById('roomSelect').value,
+        name: name,
+        phone: cleanPhone,           // сохраняем чистые 9 цифр (например: 916597788)
+        date: document.getElementById('bookingDate').value,
+        time: document.getElementById('bookingTime').value,
+        order: document.getElementById('orderText').value,
+        status: document.getElementById('status').value
+      };
+    
+      try {
+        if (editingId) {
+          await apiRequest('update', { id: editingId, ...payload });
+        } else {
+          await apiRequest('add', payload);
+        }
+        closeModal();
+        loadBookings();
+      } catch(e) {
+        console.error(e);
+      }
+    };
+
+    window.editBooking = function(id) {
+      const booking = bookings.find(b => b.id == id);
+      if (!booking) return;
+
+      editingId = id;
+      document.getElementById('clientName').value = booking.name;
+      document.getElementById('clientPhone').value = booking.phone;
+      document.getElementById('bookingTime').value = booking.time;
+      document.getElementById('orderText').value = booking.order;
+      document.getElementById('status').value = booking.status;
+
+      const select = document.getElementById('roomSelect');
+      select.innerHTML = '';
+      ["1-xona","2-xona","3-xona","4-xona","5-xona","6-xona","7-xona","8-xona","9-xona","VIP"].forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r;
+        if (r === booking.room) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('modalTitle').textContent = 'Редактировать бронь';
+      document.getElementById('modal').style.display = 'flex';
+    };
+
+    window.deleteBooking = async function(id) {
+      if (!confirm("Удалить эту бронь навсегда?")) return;
+      try {
+        await apiRequest('delete', { id: id });
+        loadBookings();
+      } catch(e) {}
+    };
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+      editingId = null;
+    }
+
+    // Автообновление каждые 25 секунд
+    setInterval(loadBookings, 25000);
+
+    // Первая загрузка при открытии страницы
+    window.onload = () => {
+      initDateFilter();
+      loadBookings();
+    };
+
+
+    // Правильная маска: начинается только с +998, но после +998 может быть 8
+    function formatPhone(input) {
+      let value = input.value.replace(/\D/g, '');   // только цифры
+    
+      // Если пользователь начал с 8 — автоматически добавляем 99 (8 → 998)
+      if (value.startsWith('8') && !value.startsWith('998')) {
+        value = '99' + value;
+      }
+    
+      // Убираем лишний 998 в начале для форматирования
+      if (value.startsWith('998')) {
+        value = value.substring(3);
+      }
+    
+      // Максимум 9 цифр после +998
+      value = value.substring(0, 9);
+    
+      // Формируем красивый формат +998 (XX) XXX-XX-XX
+      let formatted = '+998';
+    
+      if (value.length > 0) {
+        formatted += ' (' + value.substring(0, Math.min(2, value.length));
+      }
+      if (value.length > 2) {
+        formatted += ') ' + value.substring(2, Math.min(5, value.length));
+      }
+      if (value.length > 5) {
+        formatted += '-' + value.substring(5, Math.min(7, value.length));
+      }
+      if (value.length > 7) {
+        formatted += '-' + value.substring(7, 9);
+      }
+    
+      input.value = formatted;
+    }
+
+    // Форматирование уже сохранённого номера для отображения
+    function formatDisplayPhone(phone) {
+      if (!phone) return '—';
+
+      let val = phone.toString().replace(/\D/g, '');
+
+      // Убираем 998 в начале, если есть
+      if (val.startsWith('998')) val = val.substring(3);
+
+      val = val.substring(0, 9);
+    
+      let formatted = '+998';
+      if (val.length >= 2) formatted += ' (' + val.substring(0, 2) + ')';
+      if (val.length >= 5) formatted += ' ' + val.substring(2, 5);
+      if (val.length >= 7) formatted += '-' + val.substring(5, 7);
+      if (val.length >= 9) formatted += '-' + val.substring(7, 9);
+    
+      return formatted;
+    }
+
+    function getStatusText(status) {
+      const texts = {
+        confirmed: 'Подтверждено',
+        waiting: 'В ожидании',
+        arrived: 'Пришёл',
+        cancelled: 'Отменено'
+      };
+      return texts[status] || status;
+    }
+
+    // Заполнение времени (каждые 30 минут)
+    function fillTimeOptions() {
+      const select = document.getElementById('bookingTime');
+      select.innerHTML = '';
+    
+      for (let h = 10; h <= 23; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const time = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+          const opt = document.createElement('option');
+          opt.value = time;
+          opt.textContent = time;
+          select.appendChild(opt);
+        }
+      }
+      // Ночные часы
+      for (let h = 0; h <= 2; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const time = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+          const opt = document.createElement('option');
+          opt.value = time;
+          opt.textContent = time + " (ночь)";
+          select.appendChild(opt);
+        }
+      }
+    }
+
+    // Открытие модального окна
+    window.addGlobalBooking = function() {
+      editingId = null;
+
+      document.getElementById('clientName').value = '';
+      document.getElementById('clientPhone').value = '+998 ';
+      document.getElementById('orderText').value = '';
+      document.getElementById('status').value = 'confirmed';
+    
+      // Комнаты
+      const roomSelect = document.getElementById('roomSelect');
+      roomSelect.innerHTML = '';
+      ["1-xona","2-xona","3-xona","4-xona","5-xona","6-xona","7-xona","8-xona","9-xona","VIP"].forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r; opt.textContent = r;
+        roomSelect.appendChild(opt);
+      });
+    
+      // Время
+      fillTimeOptions();
+      document.getElementById('bookingTime').value = '19:30';
+    
+      // Дата — сегодня по умолчанию
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('bookingDate').value = today;
+    
+      document.getElementById('modalTitle').textContent = 'Добавить новую бронь';
+      document.getElementById('modal').style.display = 'flex';
+    };
+
+    // Инициализация календаря при загрузке страницы
+    function initDateFilter() {
+      const dateInput = document.getElementById('filterDate');
+
+      // По умолчанию — сегодняшняя дата
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.value = today;
+    
+      // При смене даты автоматически обновляем дашборд
+      dateInput.addEventListener('change', () => {
+        loadBookings();
+      });
+    }
+
+    // === АВТОРИЗАЦИЯ ===
+    const ADMIN_LOGIN = "admin";           // ← можешь изменить
+    const ADMIN_PASSWORD = "chayxana23";   // ← обязательно измени на свой пароль!
+
+    function checkLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorMsg = document.getElementById('loginError');
+    
+      if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.body.classList.add('logged-in');
+        // После успешного входа загружаем дашборд
+        initDateFilter();
+        loadBookings();
+      } else {
+        errorMsg.style.display = 'block';
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      }
+    }
+
+    // Закрытие по Enter в поле пароля
+    document.getElementById('password').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkLogin();
+      }
+    });
+
+  </script>
+
+</body>
+</html>
