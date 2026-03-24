@@ -9,6 +9,8 @@
     :root {
       --gold: #fcd34d;
       --dark-gold: #eab308;
+      --bg: #0f172a;
+      --card: #1e2937;
     }
 
     * { box-sizing: border-box; }
@@ -18,51 +20,48 @@
       background: linear-gradient(135deg, #0f172a, #1e2937);
       color: #e2e8f0;
       margin: 0;
-      padding: 0;
+      padding: 15px 10px;
       min-height: 100vh;
     }
 
     h1 {
       text-align: center;
-      font-size: 2.1rem;
+      font-size: 2.4rem;
       color: var(--gold);
-      padding: 20px 15px 10px;
-      margin: 0;
+      text-shadow: 0 0 20px rgba(252,211,77,0.5);
+      margin-bottom: 8px;
     }
 
     .subtitle {
       text-align: center;
       color: #94a3b8;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .controls {
-      padding: 15px;
+      max-width: 1200px;
+      margin: 0 auto 25px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      background: rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      gap: 15px;
+      align-items: center;
     }
 
     .date-title {
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       color: var(--gold);
-      text-align: center;
       font-weight: 600;
     }
 
     .controls-buttons {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 12px;
       justify-content: center;
     }
 
-    input, select, button {
-      padding: 14px;
+    input, select, textarea, button {
+      padding: 14px 16px;
       border-radius: 12px;
       border: none;
       background: #334155;
@@ -70,43 +69,42 @@
       font-size: 1rem;
     }
 
-    button {
-      cursor: pointer;
-    }
-
-    /* Дашборд */
+    /* ==================== GRID ==================== */
     .dashboard {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1600px;
+      margin: 20px auto;
+      width: 100%;
     }
 
     .room {
-      background: #1e2937;
-      border-radius: 16px;
-      padding: 18px;
+      background: var(--card);
+      border-radius: 18px;
+      padding: 20px;
       border: 1px solid rgba(234,179,8,0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
 
     .vip {
       border: 2px solid #f59e0b;
-      box-shadow: 0 0 25px rgba(245,158,11,0.5);
+      box-shadow: 0 0 35px rgba(245,158,11,0.5);
     }
 
     .room h2 {
       text-align: center;
       color: var(--gold);
-      margin: 0 0 15px 0;
-      font-size: 1.6rem;
+      margin: 0 0 20px 0;
+      font-size: 1.75rem;
     }
 
     .booking {
-      background: #25334a;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 12px;
-      border-left: 5px solid #eab308;
+      background: #1e2937;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-left: 6px solid #eab308;
     }
 
     .booking.confirmed { border-left-color: #22c55e; }
@@ -121,31 +119,48 @@
       inset: 0;
       background: rgba(0,0,0,0.95);
       z-index: 2000;
+      align-items: center;
+      justify-content: center;
       padding: 15px;
       overflow-y: auto;
     }
 
     .modal-content {
       background: #1e2937;
-      border-radius: 18px;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 20px;
       border: 2px solid var(--gold);
-      max-width: 100%;
+      max-height: 92vh;
       overflow-y: auto;
     }
 
     .modal-header {
-      padding: 18px;
+      padding: 20px;
       text-align: center;
       background: #0f172a;
-      border-radius: 18px 18px 0 0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 1.6rem;
     }
 
     .modal-body {
       padding: 20px;
     }
 
-    .form-group {
-      margin-bottom: 16px;
+    .form-grid {
+      display: grid !important;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 769px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     label {
@@ -155,16 +170,15 @@
     }
 
     .modal-footer {
-      padding: 18px;
+      padding: 20px;
       display: flex;
       gap: 12px;
       background: #0f172a;
-      border-radius: 0 0 18px 18px;
     }
 
     .modal-footer button {
       flex: 1;
-      padding: 16px;
+      padding: 15px;
       font-size: 1.1rem;
       border-radius: 12px;
       font-weight: bold;
@@ -174,20 +188,42 @@
     .cancel-btn { background: #475569; color: white; }
 
     /* Адаптивность */
-    @media (min-width: 768px) {
-      .dashboard {
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-      .room {
-        flex: 1 1 45%;
-        max-width: 45%;
-      }
+    @media (min-width: 769px) {
       .controls {
         flex-direction: row;
-        align-items: center;
+        justify-content: space-between;
+      }
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .room {
+        max-width: 420px;
       }
     }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 2rem; }
+      .room { padding: 16px; }
+      .booking { padding: 14px; }
+    }
+
+    /* Скрытие до логина */
+    #dashboard, .controls, h1, .subtitle {
+      display: none;
+    }
+
+    body.logged-in #dashboard,
+    body.logged-in .controls,
+    body.logged-in h1,
+    body.logged-in .subtitle {
+      display: block;
+    }
+
+    /* Отладка — должно быть видно красные рамки, если grid работает */
+    .dashboard, .form-grid {
+      border: 3px solid linear-gradient(135deg, #0f172a, #1e2937) !important;
+    }
+
   </style>
 </head>
 <body>
@@ -210,11 +246,30 @@
   <p class="subtitle">Админ панель резерваций</p>
 
   <div class="controls">
-    <div class="date-title" id="dateTitle">Брони на сегодня</div>
-    <div class="controls-buttons">
-      <input type="date" id="filterDate">
-      <button onclick="loadBookings()">🔄 Обновить</button>
-      <button onclick="addGlobalBooking()" style="background:#22c55e; color:white;">+ Новая бронь</button>
+    <!-- Заголовок с датой по центру -->
+    <div id="dateTitle" style="font-size: 1.4rem; color: var(--gold); font-weight: 600; text-align: center; width: 100%; margin-bottom: 10px;">
+      Брони на сегодня
+    </div>
+  
+    <!-- Кнопки -->
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%;">
+      <input type="date" id="filterDate" 
+             style="padding: 12px 16px; font-size: 1.05rem; border-radius: 12px; background:#334155; color:white; border:none;">
+      
+      <button onclick="loadBookings()" 
+              style="padding:12px 24px; background:#475569; color:white;">
+        🔄 Обновить
+      </button>
+      
+      <button onclick="addGlobalBooking()" 
+              style="padding:12px 24px; background:#22c55e; color:white;">
+        + Новая бронь
+      </button>
+
+      <button onclick="logout()" style="background:#ef4444; color:white; padding:12px 20px;">
+        Выйти
+      </button>
+
     </div>
   </div>
 
@@ -227,38 +282,43 @@
         <h2 id="modalTitle">Добавить новую бронь</h2>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label>Имя клиента</label>
-          <input type="text" id="clientName" placeholder="Например: Алишер Рахмонов">
-        </div>
-        <div class="form-group">
-          <label>Номер телефона</label>
-          <input type="tel" id="clientPhone" maxlength="20" placeholder="+998 (91) 659-77-88" oninput="formatPhone(this)" onfocus="if(this.value.length < 5) this.value = '+998 ';">
-        </div>
-        <div class="form-group">
-          <label>Дата бронирования</label>
-          <input type="date" id="bookingDate">
-        </div>
-        <div class="form-group">
-          <label>Время прихода</label>
-          <select id="bookingTime"></select>
-        </div>
-        <div class="form-group">
-          <label>Комната</label>
-          <select id="roomSelect"></select>
-        </div>
-        <div class="form-group">
-          <label>Статус</label>
-          <select id="status">
-            <option value="confirmed">✅ Подтверждено</option>
-            <option value="waiting">⏳ В ожидании</option>
-            <option value="arrived">👤 Пришёл</option>
-            <option value="cancelled">❌ Отменено</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Заказ (сколько кг и что)</label>
-          <textarea id="orderText" rows="3" placeholder="Плов — 4 кг, Шашлык — 2 кг, Кальян..."></textarea>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Имя клиента</label>
+            <input type="text" id="clientName" placeholder="Например: Алишер Рахмонов">
+          </div>
+          <div class="form-group">
+            <label>Номер телефона</label>
+            <input type="tel" id="clientPhone" maxlength="20" 
+                   placeholder="+998 (91) 659-77-88" 
+                   oninput="formatPhone(this)"
+                   onfocus="if(this.value.length < 5) this.value = '+998 ';">
+          </div>
+          <div class="form-group">
+            <label>Дата бронирования</label>
+            <input type="date" id="bookingDate">
+          </div>
+          <div class="form-group">
+            <label>Время прихода</label>
+            <select id="bookingTime"></select>
+          </div>
+          <div class="form-group">
+            <label>Комната</label>
+            <select id="roomSelect"></select>
+          </div>
+          <div class="form-group">
+            <label>Статус</label>
+            <select id="status">
+              <option value="confirmed">✅ Подтверждено</option>
+              <option value="waiting">⏳ В ожидании</option>
+              <option value="arrived">👤 Пришёл</option>
+              <option value="cancelled">❌ Отменено</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Заказ (сколько кг и что)</label>
+            <textarea id="orderText" rows="3" placeholder="Плов — 4 кг, Шашлык — 2 кг, Кальян..."></textarea>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -543,18 +603,32 @@
       });
     }
 
-    // === АВТОРИЗАЦИЯ ===
+    // === АВТОРИЗАЦИЯ С СОХРАНЕНИЕМ ===
     const ADMIN_LOGIN = "admin";
-    const ADMIN_PASSWORD = "chayxana23";   // ← измени на свой пароль!
+    const ADMIN_PASSWORD = "chayxana23";   // ← измени на свой надёжный пароль
+
+    // Проверка: вошёл ли пользователь ранее
+    function checkIfLoggedIn() {
+      if (localStorage.getItem('isLoggedIn') === 'true') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.body.classList.add('logged-in');
+        initDateFilter();
+        loadBookings();
+      }
+    }
 
     function checkLogin() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
       const errorMsg = document.getElementById('loginError');
-
+    
       if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
+        // Сохраняем факт входа
+        localStorage.setItem('isLoggedIn', 'true');
+
         document.getElementById('loginScreen').style.display = 'none';
         document.body.classList.add('logged-in');
+
         initDateFilter();
         loadBookings();
       } else {
@@ -563,6 +637,19 @@
         document.getElementById('password').focus();
       }
     }
+
+    // Выход из системы (можно добавить кнопку "Выйти")
+    function logout() {
+      if (confirm("Выйти из аккаунта?")) {
+        localStorage.removeItem('isLoggedIn');
+        location.reload();   // перезагрузка страницы
+      }
+    }
+
+    // Автоматическая проверка при загрузке
+    window.onload = () => {
+      checkIfLoggedIn();
+    };
 
     document.getElementById('password').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') checkLogin();
