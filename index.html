@@ -228,15 +228,28 @@
 </head>
 <body>
 
-  <!-- Авторизация -->
+  <!-- Окно авторизации -->
   <div id="loginScreen" style="position: fixed; inset: 0; background: #0f172a; z-index: 3000; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white;">
-    <div style="max-width: 380px; width: 90%; text-align: center;">
+    <div style="max-width: 400px; width: 90%; text-align: center;">
       <h1 style="margin-bottom: 10px;">Chayxana23</h1>
       <p style="color: #94a3b8; margin-bottom: 30px;">Админ панель</p>
+    
       <div style="background: #1e2937; padding: 30px; border-radius: 20px; border: 1px solid #eab308;">
-        <input type="text" id="username" placeholder="Логин" style="width:100%; padding:14px; margin-bottom:12px; border-radius:12px; border:none; background:#334155; color:white;">
-        <input type="password" id="password" placeholder="Пароль" style="width:100%; padding:14px; margin-bottom:20px; border-radius:12px; border:none; background:#334155; color:white;">
-        <button onclick="checkLogin()" style="width:100%; padding:14px; background:#eab308; color:black; border:none; border-radius:12px; font-weight:bold;">Войти</button>
+        <input type="text" id="username" placeholder="Логин (admin или guest)" 
+               style="width:100%; padding:14px; margin-bottom:12px; border-radius:12px; border:none; background:#334155; color:white; font-size:1.05rem;">
+        
+        <input type="password" id="password" placeholder="Пароль" 
+               style="width:100%; padding:14px; margin-bottom:20px; border-radius:12px; border:none; background:#334155; color:white; font-size:1.05rem;">
+        
+        <button onclick="checkLogin()" 
+                style="width:100%; padding:14px; background:#eab308; color:black; border:none; border-radius:12px; font-size:1.1rem; font-weight:bold;">
+          Войти
+        </button>
+      
+        <p style="margin-top: 20px; font-size: 0.9rem; color: #94a3b8;">
+          Гость: логин <strong>guest</strong> / пароль <strong>guest123</strong>
+        </p>
+      
         <p id="loginError" style="color:#ef4444; margin-top:15px; display:none;">Неверный логин или пароль</p>
       </div>
     </div>
@@ -603,32 +616,48 @@
       });
     }
 
-    // === АВТОРИЗАЦИЯ С СОХРАНЕНИЕМ ===
-    const ADMIN_LOGIN = "admin";
-    const ADMIN_PASSWORD = "chayxana23";   // ← измени на свой надёжный пароль
+    // ==================== АВТОРИЗАЦИЯ С ДВУМЯ УРОВНЯМИ ====================
+    const USERS = {
+      admin: {
+        password: "chayxana23",   // ← измени на свой
+        role: "admin"
+      },
+      guest: {
+        password: "guest123",     // ← гостевой пароль (можно изменить)
+        role: "guest"
+      }
+    };
 
-    // Проверка: вошёл ли пользователь ранее
+    let currentUser = null;
+
+    // Проверка сохранённой авторизации
     function checkIfLoggedIn() {
-      if (localStorage.getItem('isLoggedIn') === 'true') {
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
         document.getElementById('loginScreen').style.display = 'none';
         document.body.classList.add('logged-in');
+        applyRolePermissions();
         initDateFilter();
         loadBookings();
       }
     }
 
     function checkLogin() {
-      const username = document.getElementById('username').value.trim();
+      const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value.trim();
       const errorMsg = document.getElementById('loginError');
     
-      if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
-        // Сохраняем факт входа
-        localStorage.setItem('isLoggedIn', 'true');
-
+      const user = USERS[username];
+    
+      if (user && user.password === password) {
+        currentUser = { username, role: user.role };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
         document.getElementById('loginScreen').style.display = 'none';
         document.body.classList.add('logged-in');
 
+        applyRolePermissions();
         initDateFilter();
         loadBookings();
       } else {
@@ -638,17 +667,38 @@
       }
     }
 
-    // Выход из системы (можно добавить кнопку "Выйти")
+    // Применяем права в зависимости от роли
+    function applyRolePermissions() {
+      const isGuest = currentUser.role === "guest";
+    
+      // Скрываем кнопку "+ Новая бронь" для гостя
+      const addButtons = document.querySelectorAll('button[onclick="addGlobalBooking()"]');
+      addButtons.forEach(btn => {
+        btn.style.display = isGuest ? 'none' : 'inline-block';
+      });
+    
+      // Скрываем кнопки Изменить и Удалить внутри броней
+      // Это будет применяться при каждом renderDashboard()
+    }
+
+    // Выход
     function logout() {
       if (confirm("Выйти из аккаунта?")) {
-        localStorage.removeItem('isLoggedIn');
-        location.reload();   // перезагрузка страницы
+        localStorage.removeItem('currentUser');
+        location.reload();
       }
     }
 
-    // Автоматическая проверка при загрузке
-    window.onload = () => {
-      checkIfLoggedIn();
+    // Модифицируем renderDashboard, чтобы скрывать кнопки для гостя
+    const originalRenderDashboard = renderDashboard;
+    renderDashboard = function() {
+      originalRenderDashboard();   // вызываем старую функцию
+    
+      if (currentUser && currentUser.role === "guest") {
+        document.querySelectorAll('.booking button').forEach(btn => {
+          btn.style.display = 'none';
+        });
+      }
     };
 
     document.getElementById('password').addEventListener('keypress', function(e) {
