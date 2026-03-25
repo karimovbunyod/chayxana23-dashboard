@@ -83,25 +83,25 @@
 
     /* ==================== МЕДИА-ЗАПРОСЫ ==================== */
     /* Уменьшаем количество колонок на меньших экранах */
-      
+
     @media (max-width: 1400px) {
         .dashboard {
             grid-template-columns: repeat(4, 1fr);
         }
     }
-    
+
     @media (max-width: 1100px) {
         .dashboard {
             grid-template-columns: repeat(3, 1fr);
         }
     }
-    
+
     @media (max-width: 800px) {
         .dashboard {
             grid-template-columns: repeat(2, 1fr);
         }
     }
-    
+
     @media (max-width: 550px) {
         .dashboard {
             grid-template-columns: 1fr;   /* На телефоне — одна колонка */
@@ -425,14 +425,32 @@
     
         function updateDateTitle(selectedDate) {
           const titleEl = document.getElementById('dateTitle');
+          
           if (!selectedDate) {
-            titleEl.textContent = "Все брони";
+            titleEl.textContent = "Barcha bronlar";
             return;
           }
+        
           const date = new Date(selectedDate);
-          const options = { weekday: 'long', day: 'numeric', month: 'long' };
-          const formatted = date.toLocaleDateString('ru-RU', options);
-          titleEl.textContent = `Брони на ${formatted}`;
+        
+          // Узбекские названия дней недели (латиница)
+          const weekdaysUZ = [
+            "Yakshanba", "Dushanba", "Seshanba", "Chorshanba", 
+            "Payshanba", "Juma", "Shanba"
+          ];
+        
+          // Узбекские названия месяцев (латиница)
+          const monthsUZ = [
+            "yanvar", "fevral", "mart", "aprel", "may", "iyun",
+            "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"
+          ];
+        
+          const dayName   = weekdaysUZ[date.getDay()];
+          const day       = date.getDate();
+          const monthName = monthsUZ[date.getMonth()];
+        
+          // Финальный текст
+          titleEl.textContent = `${dayName}, ${day} ${monthName} uchun bronlar`;
         }
     
         // ====================== РЕНДЕР ДАШБОРДА ======================
@@ -460,8 +478,8 @@
             if (roomBookings.length === 0) {
               div.innerHTML = `
                 <p style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:1.1rem;">
-                  На этот день в комнате ${roomName} нет броней<br>
-                  <span style="font-size:0.95rem;">🎉 Можно отдохнуть</span>
+                  Bu kunga ${roomName}ga hech qanday bron qilinmagan<br>
+                  <span style="font-size:0.95rem;">🎉 Dam olsak bo'ladi</span>
                 </p>`;
               return;
             }
