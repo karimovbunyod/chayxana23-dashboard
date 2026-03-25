@@ -285,34 +285,41 @@
   </div>
 
   <h1>Chayxana23</h1>
-  <p class="subtitle">Админ панель резерваций</p>
+  <p id="subtitle" class="subtitle">Админ панель резерваций</p>
 
   <div class="controls">
-    <!-- Заголовок с датой по центру -->
-    <div id="dateTitle" style="font-size: 1.4rem; color: var(--gold); font-weight: 600; text-align: center; width: 100%; margin-bottom: 10px;">
-      Брони на сегодня
-    </div>
-  
-    <!-- Кнопки -->
-    <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%;">
+
+    <!-- Панель управления — видна только для администратора -->
+    <div id="adminControls" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%; margin-bottom: 18px;">
       <input type="date" id="filterDate" 
              style="padding: 12px 16px; font-size: 1.05rem; border-radius: 12px; background:#334155; color:white; border:none;">
-      
+
       <button onclick="loadBookings()" 
               style="padding:12px 24px; background:#475569; color:white;">
-        🔄 Обновить
+        🔄 Yangilash
       </button>
-      
+
       <button onclick="addGlobalBooking()" 
               style="padding:12px 24px; background:#22c55e; color:white;">
-        + Новая бронь
+        + Yangi bron
       </button>
 
-      <button onclick="logout()" style="background:#ef4444; color:white; padding:12px 20px;">
-        Выйти
+      <button onclick="logout()" 
+              style="background:#ef4444; color:white; padding:12px 20px;">
+        Chiqish
       </button>
-
     </div>
+
+    <!-- Заголовок с датой (виден всем) -->
+    <div id="dateTitle" 
+         style="font-size: 2.1rem; 
+                color: var(--gold); 
+                font-weight: 700; 
+                text-align: center; 
+                width: 100%;
+                text-shadow: 0 0 15px rgba(252, 211, 77, 0.6);">
+    </div>
+
   </div>
 
   <div class="dashboard" id="dashboard"></div>
@@ -425,7 +432,7 @@
     
         function updateDateTitle(selectedDate) {
           const titleEl = document.getElementById('dateTitle');
-          
+
           if (!selectedDate) {
             titleEl.textContent = "Barcha bronlar";
             return;
@@ -743,6 +750,7 @@
             applyRolePermissions();
             initDateFilter();
             loadBookings();
+            startAutoRefresh();
           }
         }
     
@@ -763,6 +771,7 @@
             applyRolePermissions();
             initDateFilter();
             loadBookings();
+            startAutoRefresh();
           } else {
             errorMsg.style.display = 'block';
             document.getElementById('password').value = '';
@@ -770,10 +779,27 @@
           }
         }
     
+        // Применяем права в зависимости от роли
         function applyRolePermissions() {
-          const isGuest = currentUser.role === "guest";
+          const isGuest = currentUser && currentUser.role === "guest";
+        
+          // Скрываем панель управления (кнопки + дата)
+          const adminControls = document.getElementById('adminControls');
+          if (adminControls) {
+            adminControls.style.display = isGuest ? 'none' : 'flex';
+          }
+        
+          // Скрываем подзаголовок "Админ панель резерваций"
+          const subtitle = document.getElementById('subtitle');
+          if (subtitle) {
+            subtitle.style.display = isGuest ? 'none' : 'block';
+          }
+        
+          // Скрываем кнопку "+ Yangi bron" (на всякий случай)
           const addButtons = document.querySelectorAll('button[onclick="addGlobalBooking()"]');
-          addButtons.forEach(btn => btn.style.display = isGuest ? 'none' : 'inline-block');
+          addButtons.forEach(btn => {
+            btn.style.display = isGuest ? 'none' : 'inline-block';
+          });
         }
     
         function logout() {
@@ -802,6 +828,23 @@
         window.saveBooking = saveBooking;
         window.closeModal = closeModal;
     
+      // ====================== АВТООБНОВЛЕНИЕ ======================
+      let autoRefreshInterval = null;
+
+      function startAutoRefresh() {
+          // Останавливаем предыдущий интервал, если он был
+          if (autoRefreshInterval) {
+              clearInterval(autoRefreshInterval);
+          }
+        
+          // Обновляем каждые 25 секунд (рекомендую от 20 до 30)
+          autoRefreshInterval = setInterval(() => {
+              loadBookings();
+          }, 25000);   // 25000 = 25 секунд
+      }
+
+      // Запускаем автообновление после успешного входа
+
     </script>
 </body>
 </html>
